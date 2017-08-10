@@ -126,7 +126,7 @@ public class GobangPanel extends View {
         for (int i = 0, n = mBlackArray.size(); i < n; i++) {
             Point blackPoint = mBlackArray.get(i);
             canvas.drawBitmap(mBlackPiece,
-                    (blackPoint.x + (1 - radioPieceOfLineHeight) / 2 * mLineHeight),
+                    (blackPoint.x + (1 - radioPieceOfLineHeight) / 2) * mLineHeight,
                     (blackPoint.y + (1 - radioPieceOfLineHeight) / 2) * mLineHeight,
                     null);
         }
