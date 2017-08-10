@@ -23,7 +23,7 @@ public class GobangPanel extends View {
 
     private int mPanelWidth;
     private float mLineHeight;
-    private int MAX_LINE = 10;
+    private final int MAX_LINE = 10;
 
     private Paint mPaint = new Paint();
     private Bitmap mWhitePiece;
@@ -35,9 +35,22 @@ public class GobangPanel extends View {
     private List<Point> mWhiteArray = new ArrayList<Point>();
     private List<Point> mBlackArray = new ArrayList<Point>();
 
+    //赢法数组
+    int[][][] wins = new int[MAX_LINE][MAX_LINE][200];
+
+    //赢法统计数组
+    int[] myWin = new int[200];
+    int[] computerWin = new int[200];
+    private int count;
+    //游戏是否结束over
+    private boolean over = false;
 
     //棋盘上两方棋子的标志  0 无子  ；           1  我方 ；              2   电脑
     private int[][] GobangBoard = new int[10][10];
+
+    //保存最高得分的i，j值
+    int u = 0;
+    int v = 0;
 
     public GobangPanel(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -134,7 +147,12 @@ public class GobangPanel extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
+        if (over) {
+            return false;
+        }
+        if (!mIsWhite) {
+//            return false;
+        }
         int action = event.getAction();
 
         if (action == MotionEvent.ACTION_UP) {
@@ -145,10 +163,24 @@ public class GobangPanel extends View {
             int m = p.x;
             int n = p.y;
 
+            if (mWhiteArray.contains(p) || mBlackArray.contains(p)) {
+                return false;   // 棋子已存在时不作为
+            }
+
             if (mIsWhite) {
                 mWhiteArray.add(p);
 //                GobangBoard[m][n] = 1;      //  0：无子 1:我方 2：对方
+                if (!over) {
+                    mIsWhite = !mIsWhite;
+//                    computerAI();
+                }
+            } else {
+                mBlackArray.add(p);
+                if (!over) {
+                    mIsWhite = !mIsWhite;
+                }
             }
+
             invalidate();
             return true;
         }
