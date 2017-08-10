@@ -7,9 +7,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.support.annotation.MenuRes;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayList;
@@ -30,8 +30,14 @@ public class GobangPanel extends View {
     private Bitmap mBlackPiece;
     private float radioPieceOfLineHeight = 3 * 1.0f / 4;
 
+    //白棋先下，当前轮到白棋
+    private boolean mIsWhite = true;
     private List<Point> mWhiteArray = new ArrayList<Point>();
     private List<Point> mBlackArray = new ArrayList<Point>();
+
+
+    //棋盘上两方棋子的标志  0 无子  ；           1  我方 ；              2   电脑
+    private int[][] GobangBoard = new int[10][10];
 
     public GobangPanel(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -107,6 +113,7 @@ public class GobangPanel extends View {
         }
     }
 
+
     private void drawPieces(Canvas canvas) {
         for (int i = 0, n = mWhiteArray.size(); i < n; i++) {
             Point whitePoint = mWhiteArray.get(i);
@@ -123,5 +130,33 @@ public class GobangPanel extends View {
                     (blackPoint.y + (1 - radioPieceOfLineHeight) / 2) * mLineHeight,
                     null);
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        int action = event.getAction();
+
+        if (action == MotionEvent.ACTION_UP) {
+            int x = (int) event.getX();
+            int y = (int) event.getY();
+
+            Point p = getValidPoint(x, y);
+            int m = p.x;
+            int n = p.y;
+
+            if (mIsWhite) {
+                mWhiteArray.add(p);
+//                GobangBoard[m][n] = 1;      //  0：无子 1:我方 2：对方
+            }
+            invalidate();
+            return true;
+        }
+        return true;
+//        return super.onTouchEvent(event);
+    }
+
+    private Point getValidPoint(int x, int y) {
+        return new Point((int) (x / mLineHeight), (int) (y / mLineHeight));
     }
 }
