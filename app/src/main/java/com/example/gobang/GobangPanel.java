@@ -26,7 +26,9 @@ public class GobangPanel extends View {
 
     private int mPanelWidth;
     private float mLineHeight;
+    private final int FIVE = 5;
     private final int MAX_LINE = 10;
+    private final int MAX_CNT = (FIVE-1) * (int) Math.pow(MAX_LINE, 2);
 
     private Paint mPaint = new Paint();
     private Bitmap mWhitePiece;
@@ -39,11 +41,11 @@ public class GobangPanel extends View {
     private List<Point> mBlackArray = new ArrayList<Point>();
 
     //赢法数组
-    int[][][] wins = new int[MAX_LINE][MAX_LINE][200];
+    int[][][] wins = new int[MAX_LINE][MAX_LINE][MAX_CNT];
 
     //赢法统计数组
-    int[] myWin = new int[200];
-    int[] pcWin = new int[200];
+    int[] myWin = new int[MAX_CNT];
+    int[] pcWin = new int[MAX_CNT];
     private int count;
     //游戏是否结束over
     private boolean over = false;
@@ -78,10 +80,12 @@ public class GobangPanel extends View {
         // 通过以下运算，给每个点分配权重价值，越靠近中心点的价值越高，统计点P=p(x,y)的累积价值ΣP(z)
         Log.d(TAG, "WinInit ----run");
 
+        Log.d(TAG, "MAX_CNT = " + MAX_CNT);
         //横向赢法统计
         for (int i = 0; i < MAX_LINE; i++) {
-            for (int j = 0; j < MAX_LINE + 1 - 5; j++) {
-                for (int k = 0; k < 5; k++) {
+            for (int j = 0; j < MAX_LINE + 1 - FIVE; j++) {
+                for (int k = 0; k < FIVE; k++) {
+                    // Log.d(TAG, "i,j,k:  " + i + ", " + j + ", " + k + "  cnt=" + count);
                     wins[i][j + k][count] = 1;  // 金字塔堆积,三维立体坐标，第3个坐标为棋子累积价值 |/_(x,y,z)
                 }
                 count++;
@@ -89,8 +93,9 @@ public class GobangPanel extends View {
         }
         //纵向赢法统计
         for (int i = 0; i < MAX_LINE; i++) {
-            for (int j = 0; j < MAX_LINE + 1 - 5; j++) {
-                for (int k = 0; k < 5; k++) {
+            for (int j = 0; j < MAX_LINE + 1 - FIVE; j++) {
+                for (int k = 0; k < FIVE; k++) {
+                    // Log.d(TAG, "i,j,k:  " + i + ", " + j + ", " + k + "  cnt=" + count);
                     wins[j + k][i][count] = 1;
                 }
                 count++;
@@ -98,9 +103,10 @@ public class GobangPanel extends View {
         }
 
         //左上到右下斜线赢法统计
-        for (int i = 0; i < MAX_LINE + 1 - 5; i++) {
-            for (int j = 0; j < MAX_LINE + 1 - 5; j++) {
-                for (int k = 0; k < 5; k++) {
+        for (int i = 0; i < MAX_LINE + 1 - FIVE; i++) {
+            for (int j = 0; j < MAX_LINE + 1 - FIVE; j++) {
+                for (int k = 0; k < FIVE; k++) {
+                    // Log.d(TAG, "i,j,k:  " + i + ", " + j + ", " + k + "  cnt=" + count);
                     wins[i + k][j + k][count] = 1;
                 }
                 count++;
@@ -108,9 +114,10 @@ public class GobangPanel extends View {
         }
 
         //右上到左下斜线赢法统计
-        for (int i = 0; i < MAX_LINE + 1 - 5; i++) {
-            for (int j = MAX_LINE - 1; j > MAX_LINE - 1 - (5 + 1); j--) {
-                for (int k = 0; k < 5; k++) {
+        for (int i = 0; i < MAX_LINE + 1 - FIVE; i++) {
+            for (int j = MAX_LINE - 1; j > MAX_LINE - 1 - (FIVE + 1); j--) {
+                for (int k = 0; k < FIVE; k++) {
+                    // Log.d(TAG, "i,j,k:  " + i + ", " + j + ", " + k + "  cnt=" + count);
                     wins[i + k][j - k][count] = 1;
                 }
                 count++;
@@ -139,7 +146,7 @@ public class GobangPanel extends View {
         int n = 0;
         for (int i = 0; i < MAX_LINE; i++) {
             for (int j = 0; j < MAX_LINE; j++) {
-                for (int k = 0; k < 200; k++) {
+                for (int k = 0; k < MAX_CNT; k++) {
                     n = wins[i][j][k] + n;
                 }
                 System.out.printf("%02d   ", n);
@@ -201,7 +208,7 @@ public class GobangPanel extends View {
         for (int i = 0; i < MAX_LINE; i++) {
             int start = (int) (lineHeight / 2);
             int end = (int) (w - lineHeight / 2);
-            int y = (int) ((i + 0.5) * lineHeight);
+            int y = (int) ((0.5 + i) * lineHeight);
             canvas.drawLine(start, y, end, y, mPaint);      // 绘制第i条横线
             canvas.drawLine(y, start, y, end, mPaint);      // 绘制第i条竖线
         }
@@ -254,8 +261,8 @@ public class GobangPanel extends View {
                 for (int k = 0; k < count; k++) {
                     if (wins[m][n][k] == 1) {
                         myWin[k]++;             // 胜算
-                        pcWin[k] = 6;
-                        if (myWin[k] == 5) {
+                        pcWin[k] = FIVE + 1;
+                        if (myWin[k] == FIVE) {
                             Toast.makeText(this.getContext(), "你赢了", Toast.LENGTH_SHORT).show();
                             over = true;
                         }
@@ -310,6 +317,11 @@ public class GobangPanel extends View {
                             } else if (myWin[k] == 4) {
                                 myScore[i][j] += 10000;
                             }
+                           /* for (int n = 1; i < FIVE; n++) {
+                                if (myWin[k] == n) {
+                                    myScore[i][j] += MAX_CNT * (1 + (int) Math.pow(FIVE, (n - 1)));
+                                }
+                            }*/
 
                             //计算机走法 得分
                             if (pcWin[k] == 1) {
@@ -321,7 +333,11 @@ public class GobangPanel extends View {
                             } else if (pcWin[k] == 4) {
                                 pcScore[i][j] += 20000;
                             }
-
+                           /* for (int n = 1; i < FIVE; n++) {
+                                if (myWin[k] == n) {
+                                    myScore[i][j] += MAX_CNT * (1 + (int) Math.pow(FIVE, (n - 1))) + 2;
+                                }
+                            }*/
                         }
                     }
 
@@ -362,8 +378,8 @@ public class GobangPanel extends View {
         for (int k = 0; k < count; k++) {
             if (wins[u][v][k] == 1) {
                 pcWin[k]++;
-                myWin[k] = 6;
-                if (pcWin[k] == 5) {
+                myWin[k] = FIVE + 1;
+                if (pcWin[k] == FIVE) {
                     Toast.makeText(this.getContext(), "计算机赢了", Toast.LENGTH_SHORT).show();
                     over = true;
                 }
